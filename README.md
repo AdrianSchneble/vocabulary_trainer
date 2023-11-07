@@ -38,7 +38,9 @@ With that out of the way, here are the setup instructions:
 - Step 1: Create and activate a venv. This is not strictly necessary, but it's highly recommended.
   I used pip, but you can of course use conda as well.
   Make sure to also create a corresponding kernel with that venv.
-- Step 2: Run "pip install -r requirements.txt" to install the required packages (or the corresponding conda command[s]).
+- Step 2: Run `pip install -r requirements.txt` to install the required packages (or use the corresponding conda command/s).
+  `requirements-dev.txt` are only necessary if you plan to contribute to the code base.
+  `requirements-mobile.txt` exists for convenience for use on mobile, where I couldn't get the simpleaudio package to work.
   For readability's sake, version numbers are not included in the requirements, but I don't expect major issues here.
   I'd rather have the newest versions of the used packages, instead of fixing the version which I'd realistically rarely update.
 - Step 3: In `vocabulary_quiz.ipynb`, which is the main notebook used for the trainer, modify the path to your excel file.
