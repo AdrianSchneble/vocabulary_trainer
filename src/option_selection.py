@@ -39,7 +39,7 @@ def _find_plausible_distractors_improved(word, options_pool, num_distractors=3):
     return chosen_distractors
 
 
-def create_multiple_choice_question(dicts, chosen_word):
+def create_multiple_choice_question(dicts, chosen_word) -> tuple[str, str, list, bool]:
     """
     Create a multiple-choice question from the given dictionaries.
 
@@ -63,7 +63,7 @@ def create_multiple_choice_question(dicts, chosen_word):
     options = distractors + [correct_answer]
     random.shuffle(options)
 
-    return question_word, correct_answer, options
+    return question_word, correct_answer, options, from_korean
 
 
 def update_selection_algorithm(historical_results, current_results, dicts):

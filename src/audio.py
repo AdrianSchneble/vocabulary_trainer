@@ -1,23 +1,36 @@
-# simpleaudio is not available with Pydroid 3 on mobile - thus the try-except-statements.
+import io
 
-try:
-    import simpleaudio as sa
-except:
-    pass
+import pygame
+from gtts import gTTS
+
+pygame.mixer.init()
 
 
-def _play_sound(filename):
+def _play_sound(filename) -> None:
+    # pygame doesn't work on mobile, hence the try-except
     try:
-        wave_obj = sa.WaveObject.from_wave_file(filename)
-        play_obj = wave_obj.play()
-        play_obj.wait_done()  # Wait until sound has finished playing
+        pygame.mixer.music.load(filename)
+        pygame.mixer.music.play()
     except:
         pass
 
 
-def correct_sound():
+def correct_sound() -> None:
     _play_sound("assets/correct.wav")
 
 
-def incorrect_sound():
+def incorrect_sound() -> None:
     _play_sound("assets/wrong.wav")
+
+
+def play_vocabulary_tts(vocabulary: str) -> None:
+    # pygame doesn't work on mobile, hence the try-excepts. Also, gtts requires internet.
+    try:
+        tts = gTTS(vocabulary, lang="ko")
+        mp3_fp = io.BytesIO()
+        tts.write_to_fp(mp3_fp)
+        mp3_fp.seek(0)
+        pygame.mixer.music.load(mp3_fp)
+        pygame.mixer.music.play()
+    except:
+        pass

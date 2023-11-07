@@ -4,7 +4,7 @@ from datetime import datetime
 from IPython.display import clear_output
 from ipywidgets import Button, HBox, Label, Layout, Output, VBox
 
-from src.audio import correct_sound, incorrect_sound
+from src.audio import correct_sound, incorrect_sound, play_vocabulary_tts
 from src.historical_results import load_historical_results, save_results_to_file
 from src.option_selection import (
     create_multiple_choice_question,
@@ -64,7 +64,7 @@ def create_mc_question_widget_with_tracking(
     chosen_word = random.choice(weighted_vocab)
 
     # Get the question details
-    question, correct_answer, options = create_multiple_choice_question(
+    question, correct_answer, options, from_korean = create_multiple_choice_question(
         dicts, chosen_word
     )
 
@@ -124,6 +124,9 @@ def create_mc_question_widget_with_tracking(
                 next_button.style.button_color = "Orange"
                 incorrect_sound()
 
+            if not from_korean:
+                # i.e. the source is not korean, but the answer (= b.description) is
+                play_vocabulary_tts(b.description)
             # Record the result
             results.append(
                 {
@@ -169,3 +172,6 @@ def create_mc_question_widget_with_tracking(
 
     # Update the container with the new widgets
     container.children = [answer_box]
+
+    if from_korean:
+        play_vocabulary_tts(question)
