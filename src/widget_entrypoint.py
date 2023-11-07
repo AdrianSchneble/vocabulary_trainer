@@ -90,36 +90,6 @@ def create_mc_question_widget_with_tracking(
     # Output widget to display messages
     output = Output(style=common_style)
 
-    # Function to handle button click event for answers
-    def on_button_clicked(b):
-        with output:
-            clear_output()
-            answer_correct = b.description == correct_answer
-            if answer_correct:
-                print("Correct!")
-                correct_sound()
-            else:
-                print(f"Incorrect! The correct translation is: {correct_answer}")
-                incorrect_sound()
-
-            # Record the result
-            results.append(
-                {
-                    "query": question,
-                    "correct_translation": correct_answer,
-                    "user_correct": answer_correct,
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
-
-        # Disable buttons after a choice is made
-        for button in answer_buttons:
-            button.disabled = True
-
-    # Attach the event handler to all the answer buttons
-    for button in answer_buttons:
-        button.on_click(on_button_clicked)
-
     # Next question button
     next_button = Button(
         description="Next",
@@ -139,6 +109,38 @@ def create_mc_question_widget_with_tracking(
         ),
         style=common_style,
     )
+
+    # Function to handle button click event for answers
+    def on_button_clicked(b):
+        with output:
+            clear_output()
+            answer_correct = b.description == correct_answer
+            if answer_correct:
+                print("Correct!")
+                next_button.style.button_color = "LimeGreen"
+                correct_sound()
+            else:
+                print(f"Incorrect! The correct translation is: {correct_answer}")
+                next_button.style.button_color = "Orange"
+                incorrect_sound()
+
+            # Record the result
+            results.append(
+                {
+                    "query": question,
+                    "correct_translation": correct_answer,
+                    "user_correct": answer_correct,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
+
+        # Disable buttons after a choice is made
+        for button in answer_buttons:
+            button.disabled = True
+
+    # Attach the event handler to all the answer buttons
+    for button in answer_buttons:
+        button.on_click(on_button_clicked)
 
     # Button event handlers
     def on_next_button_clicked(b):
