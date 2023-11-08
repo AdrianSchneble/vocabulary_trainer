@@ -1,10 +1,27 @@
 import random
 from datetime import datetime, timedelta
 
+import jellyfish
 import pandas as pd
 
 
-def _find_plausible_distractors_improved(word, options_pool, num_distractors=3):
+def _filter_similar_words(base_str, words) -> list[str]:
+    """Returns a sorted list of the most similar words (the first element is most similar)"""
+    # Create a dictionary to hold words and their similarity scores
+    similar_words = {
+        word: jellyfish.jaro_winkler_similarity(base_str, word)
+        for word in words
+        if word != base_str
+    }
+    filtered_sorted_words = sorted(
+        similar_words,
+        key=lambda word: similar_words[word],
+        reverse=True,
+    )
+    return filtered_sorted_words
+
+
+def _find_plausible_distractors(word, options_pool, num_distractors=3):
     """
     Find plausible distractors for a given word from the options_pool.
     If not enough similar words are found, it picks random words as distractors.
@@ -14,27 +31,21 @@ def _find_plausible_distractors_improved(word, options_pool, num_distractors=3):
     :param num_distractors: Number of distractors to return.
     :return: A list of plausible distractors.
     """
-    # Select words that start with the same first letter or have the same length as the given word
-    first_letter = word[0]  # Consider the first letter for similarity
-    similar_length_words = [
-        w for w in options_pool if len(w) == len(word) and w != word
-    ]
-    similar_words = [
-        w for w in options_pool if w.startswith(first_letter) and w != word
-    ]
+    similar_words = _filter_similar_words(word, options_pool)
 
-    # Combine the lists of similar words, prioritize them, and ensure they're unique
-    combined_similar = list(set(similar_words + similar_length_words))
-    random.shuffle(combined_similar)
-    chosen_distractors = combined_similar[:num_distractors]
+    # Pick the most similar word, and sample the remaining words.
+    # Sample from more than just the <num_distractors> top words!
+    # This decreases the accuracy of the distrators, but it ensures some variation, instead of always
+    # showing the same options for a specific given word. As a countermeasure, the top result is always kept.
+    most_similar_word = similar_words[0]
+    num_distractors -= 1
+    remaining_words = similar_words[1:]
 
-    # If we don't have enough similar words, fill the rest with random choices
-    if len(chosen_distractors) < num_distractors:
-        remaining_options = list(set(options_pool) - set(chosen_distractors) - {word})
-        random.shuffle(remaining_options)
-        chosen_distractors.extend(
-            remaining_options[: num_distractors - len(chosen_distractors)]
-        )
+    # + 2, because two degrees of freedom is a good middle ground.
+    second_most_similar_words = random.sample(
+        remaining_words[: num_distractors + 2], num_distractors
+    )
+    chosen_distractors = [most_similar_word] + second_most_similar_words
 
     return chosen_distractors
 
@@ -57,7 +68,7 @@ def create_multiple_choice_question(dicts, chosen_word) -> tuple[str, str, list,
 
     # Find distractors from the opposite dictionary
     options_pool = list(to_dict.keys())  # Pool of possible options for distractors
-    distractors = _find_plausible_distractors_improved(correct_answer, options_pool)
+    distractors = _find_plausible_distractors(correct_answer, options_pool)
 
     # Combine correct answer and distractors, then shuffle
     options = distractors + [correct_answer]
